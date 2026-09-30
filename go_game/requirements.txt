@@ -1,0 +1,14 @@
+# Go Game Requirements
+# Core dependencies for the Go game application
+
+# GUI Framework
+customtkinter>=5.0.0
+
+# Optional dependencies for enhanced features
+# numpy>=1.20.0  # For advanced AI algorithms (future enhancement)
+# matplotlib>=3.5.0  # For game analysis and visualization (future enhancement)
+
+# Development dependencies (uncomment for development)
+# pytest>=7.0.0  # For unit testing
+# black>=22.0.0  # For code formatting
+# flake8>=4.0.0  # For linting

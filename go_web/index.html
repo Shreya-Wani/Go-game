@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Go Game - Minimax vs Alpha-Beta</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- Main Application Container -->
+    <div class="app">
+      <!-- ===== HEADER SECTION ===== -->
+      <!-- Contains quick controls and game title -->
+      <header class="header">
+        <!-- Left side: Board size selection -->
+        <div class="header-left">
+          <select id="boardSize" class="header-select" aria-label="Board size">
+            <option value="7">7×7 (Tiny)</option>
+            <option value="9">9×9 (Small)</option>
+            <option value="13" selected>13×13 (Medium)</option>
+            <option value="19">19×19 (Large)</option>
+          </select>
+        </div>
+
+        <!-- Center: Application title -->
+        <div class="header-center">
+          <h1>Go Game</h1>
+        </div>
+
+        <!-- Right side: Game mode and controls -->
+        <div class="header-right">
+          <!-- Game mode toggle (Human vs AI or Human vs Human) -->
+          <div class="mode-toggle">
+            <label class="toggle-label">
+              <input type="radio" name="gameMode" value="humanVsAi" checked />
+              <span>vs AI</span>
+            </label>
+            <label class="toggle-label">
+              <input type="radio" name="gameMode" value="humanVsHuman" />
+              <span>vs Human</span>
+            </label>
+          </div>
+          <!-- New game button -->
+          <button id="reset" class="header-btn">New Game</button>
+        </div>
+      </header>
+
+      <!-- ===== MAIN GAME AREA ===== -->
+      <!-- Three-column layout: controls, board, statistics -->
+      <main class="main">
+        <!-- ===== LEFT SIDEBAR ===== -->
+        <!-- Game status and AI configuration controls -->
+        <aside class="left-sidebar">
+          <!-- Current game status display -->
+          <div class="control-card">
+            <h3>Game Status</h3>
+            <div class="status-display">
+              <!-- Shows whose turn it is -->
+              <div class="current-player" id="currentPlayer">Black to play</div>
+              <!-- Shows current score -->
+              <div class="score" id="gameScore">Black: 0 | White: 0</div>
+            </div>
+            <!-- Lightweight move-by-move log -->
+            <div class="move-log" id="moveLog"></div>
+          </div>
+
+          <!-- AI algorithm and difficulty settings -->
+          <div class="control-card">
+            <h3>AI Settings</h3>
+            <div class="ai-controls">
+              <!-- Algorithm selection: Minimax vs Alpha-Beta -->
+              <div class="setting-row">
+                <label>Algorithm:</label>
+                <div class="radio-inline">
+                  <label class="radio-small">
+                    <input type="radio" name="algorithm" value="minimax" />
+                    <span>Minimax</span>
+                  </label>
+                  <label class="radio-small">
+                    <input
+                      type="radio"
+                      name="algorithm"
+                      value="alphabeta"
+                      checked
+                    />
+                    <span>Alpha-Beta</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- AI search depth slider (difficulty) -->
+              <div class="setting-row">
+                <label for="depth">Depth: <span id="depthValue">2</span></label>
+                <input
+                  type="range"
+                  id="depth"
+                  min="1"
+                  max="4"
+                  value="2"
+                  class="depth-slider"
+                  aria-describedby="depthValue"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Game history and statistics -->
+          <div class="control-card">
+            <h3
+              style="
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 8px;
+              "
+            >
+              <span>Game History</span>
+              <button
+                id="resetHistory"
+                class="btn btn-ghost"
+                aria-label="Reset game history"
+                title="Reset game history"
+              >
+                Reset
+              </button>
+            </h3>
+            <div id="gameHistoryStats" class="performance-stats">
+              <div class="stat-row">
+                <span class="stat-label">Total Games:</span>
+                <span class="stat-value" id="totalGames">0</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">vs AI Wins:</span>
+                <span class="stat-value" id="humanVsAiWins">0/0</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">vs Human:</span>
+                <span class="stat-value" id="humanVsHumanStats">0/0</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Last Game:</span>
+                <span class="stat-value" id="lastGameResult">-</span>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <!-- ===== CENTER BOARD AREA ===== -->
+        <!-- Main game board and controls -->
+        <div class="board-center">
+          <!-- Canvas element for drawing the Go board -->
+          <!-- The board is rendered using HTML5 Canvas for precise control -->
+          <canvas id="gameBoard" width="400" height="400"></canvas>
+
+          <!-- Game action buttons -->
+          <div class="board-actions">
+            <!-- Pass turn button (important in Go strategy) -->
+            <button id="pass" class="action-btn">Pass Turn</button>
+          </div>
+        </div>
+
+        <!-- ===== RIGHT SIDEBAR ===== -->
+        <!-- AI performance metrics and game tips -->
+        <aside class="right-sidebar">
+          <!-- Real-time AI performance statistics -->
+          <div class="control-card">
+            <h3>AI Performance</h3>
+            <!-- These stats update after each AI move -->
+            <div id="aiStats" class="performance-stats">
+              <div class="stat-row">
+                <span class="stat-label">Algorithm:</span>
+                <span class="stat-value">-</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Nodes:</span>
+                <span class="stat-value">-</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Time:</span>
+                <span class="stat-value">-</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Rate:</span>
+                <span class="stat-value">-</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Helpful tips for new players -->
+          <div class="control-card">
+            <h3>Game Tips</h3>
+            <div class="tips">
+              <p>• Click intersections to place stones</p>
+              <p>• Capture opponent stones by surrounding them</p>
+              <p>• Pass when you can't make good moves</p>
+              <p>• Two passes in a row ends the game</p>
+            </div>
+          </div>
+        </aside>
+      </main>
+    </div>
+
+    <!-- Load JavaScript modules in dependency order -->
+    <!-- Utilities must be loaded first -->
+    <script src="js/utils.js"></script>
+
+    <!-- Core game logic -->
+    <script src="js/gameLogic.js"></script>
+
+    <!-- Game history and statistics -->
+    <script src="js/gameHistory.js"></script>
+
+    <!-- AI algorithms -->
+    <script src="js/heuristics.js"></script>
+    <script src="js/aiLogic.js"></script>
+
+    <!-- UI components and rendering -->
+    <script src="js/uiComponents.js"></script>
+
+    <!-- Main application coordinator (must be last) -->
+    <script src="js/main.js"></script>
+  </body>
+</html>
